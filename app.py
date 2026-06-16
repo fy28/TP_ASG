@@ -1,11 +1,13 @@
 import streamlit as st
 import io
 from Bio import SeqIO
+import matplotlib.pyplot as plt
+from collections import Counter
 
 st.title("Projet ASG-2026")
 st.header("Lot 1 : Lecture de fichiers FASTQ")
 
-# Choix de la taille des k-mers par l'utilisateur
+# Choix de la taille des kmers
 k = st.slider(
     "Choisissez la taille des k-mers",
     min_value=2,
@@ -35,6 +37,20 @@ def generate_kmers(sequence, k):
 
     return kmers
 
+def count_kmers(reads, k):
+    """
+    Compte la fréquence de tous les k-mers.
+    """
+
+    all_kmers = []
+
+    for read in reads:
+        sequence = str(read.seq)
+        kmers = generate_kmers(sequence, k)
+        all_kmers.extend(kmers)
+
+    return Counter(all_kmers)
+
 
 uploaded_file = st.file_uploader(
     "Choisissez un fichier FASTQ",
@@ -56,24 +72,42 @@ if uploaded_file is not None:
 
     st.subheader("Aperçu des premiers reads")
 
-    # parcour des 5 premiers reads de la liste, si < 5, arret
+        # parcour des 5 premiers reads de la liste, si < 5, arret
     for read in reads[:5]:
 
         st.write(f"ID : {read.id}")
 
-        # Conversion séquence => texte
+        # séquence => texte
         sequence = str(read.seq)
 
         st.code(sequence)
 
-        # Génération des k-mers à partir de la séquence
         kmers = generate_kmers(sequence, k)
 
         # aff
         st.write(f"Nombre de k-mers : {len(kmers)}")
 
-        # Aff liste des k-mers
         st.write(kmers)
 
         # Séparation visuelle entre deux reads
         st.divider()
+
+    st.subheader("Histogramme des fréquences des k-mers")
+
+    kmer_counts = count_kmers(reads, k)
+
+    fig, ax = plt.subplots()
+
+    # Construction de l'histogramme des fréquences
+    ax.hist(
+        kmer_counts.values(),
+        bins=range(1, max(kmer_counts.values()) + 2),
+    )
+
+    #
+    ax.set_xlabel("Fréquence")
+    ax.set_ylabel("Nombre de k-mers")
+    ax.set_title("Distribution des fréquences des k-mers")
+
+    # Aff
+    st.pyplot(fig)
