@@ -170,6 +170,23 @@ def build_bloom_filter(reads, k):
 
     return bloom
 
+#k-mers neighbor
+def get_successors(kmer, bloom):
+    """
+    Génère les 4 extensions possibles en 3'.
+    """
+
+    bases = ["A", "C", "G", "T"]
+    successors = []
+
+    for base in bases:
+        next_kmer = kmer[1:] + base
+
+        if bloom.contains(next_kmer):
+            successors.append(next_kmer)
+
+    return successors
+
 
 uploaded_file = st.file_uploader(
     "Choisissez un fichier FASTQ",
@@ -323,3 +340,24 @@ if uploaded_file is not None:
             st.error(
                 "Certainement absent"
             )
+
+    st.subheader("Voisins 3' du k-mer")
+
+    if kmer_test:
+
+        successors = get_successors(
+            kmer_test,
+            bloom
+        )
+
+        st.write("Voisins trouvés :")
+        st.write(successors)
+
+        if len(successors) == 0:
+            st.warning("Aucun voisin trouvé")
+
+        elif len(successors) == 1:
+            st.success("Progression unique possible")
+
+        else:
+            st.warning("Bifurcation détectée")
