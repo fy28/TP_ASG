@@ -3,6 +3,8 @@ import io
 from Bio import SeqIO
 import matplotlib.pyplot as plt
 from collections import Counter
+from bitarray import bitarray
+import mmh3
 
 st.title("Projet ASG-2026")
 st.header("Lot 1 : Lecture de fichiers FASTQ")
@@ -109,6 +111,64 @@ def longest_common_subsequence(seq1, seq2):
         start_seq1,
         start_seq2
     )
+
+# Bloom Filter
+class BloomFilter:
+
+    def __init__(self, size=1000, hash_count=3):
+
+        self.size = size
+        self.hash_count = hash_count
+
+        # tableau de bits
+        self.bit_array = bitarray(size)
+        self.bit_array.setall(0)
+
+    # insertion d'un k-mer
+    def add(self, item):
+
+        for i in range(self.hash_count):
+
+            index = mmh3.hash(
+                item,
+                i
+            ) % self.size
+
+            self.bit_array[index] = 1
+
+    # test de présence
+    def contains(self, item):
+
+        for i in range(self.hash_count):
+
+            index = mmh3.hash(
+                item,
+                i
+            ) % self.size
+
+            if not self.bit_array[index]:
+                return False
+
+        return True
+
+
+def build_bloom_filter(reads, k):
+
+    bloom = BloomFilter()
+
+    for read in reads:
+
+        sequence = str(read.seq)
+
+        kmers = generate_kmers(
+            sequence,
+            k
+        )
+
+        for kmer in kmers:
+            bloom.add(kmer)
+
+    return bloom
 
 
 uploaded_file = st.file_uploader(
@@ -231,3 +291,35 @@ if seq1 and seq2:
     st.write(
         f"Sous-séquence commune : {lcs}"
     )
+
+# ======================
+# LOT 3
+# ======================
+
+st.header("Lot 3 : Bloom Filter")
+
+if uploaded_file is not None:
+
+    # Construction du filtre
+    bloom = build_bloom_filter(
+        reads,
+        k
+    )
+
+    kmer_test = st.text_input(
+        "Tester un k-mer"
+    )
+
+    if kmer_test:
+
+        if bloom.contains(kmer_test):
+
+            st.success(
+                "Probablement présent"
+            )
+
+        else:
+
+            st.error(
+                "Certainement absent"
+            )
