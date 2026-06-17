@@ -3,6 +3,7 @@ import io
 from Bio import SeqIO
 import matplotlib.pyplot as plt
 from collections import Counter
+from Bio.SeqRecord import SeqRecord
 
 st.title("Projet ASG-2026")
 st.header("Lot 1 : Lecture de fichiers FASTQ")
@@ -111,3 +112,19 @@ if uploaded_file is not None:
 
     # Aff
     st.pyplot(fig)
+
+    # ===== FASTQ -> FASTA =====
+
+    st.subheader("Conversion FASTQ → FASTA")
+
+    fasta_content = ""
+
+    for read in reads:
+        fasta_content += f">{read.id}\n{read.seq}\n"
+
+    st.download_button(
+        label="Télécharger le fichier FASTA",
+        data=fasta_content,
+        file_name="converted.fasta",
+        mime="text/plain"
+    )
