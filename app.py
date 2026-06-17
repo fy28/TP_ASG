@@ -152,9 +152,34 @@ class BloomFilter:
         return True
 
 
-def build_bloom_filter(reads, k):
+# def build_bloom_filter(reads, k):
 
-    bloom = BloomFilter()
+#     bloom = BloomFilter()
+
+#     for read in reads:
+
+#         sequence = str(read.seq)
+
+#         kmers = generate_kmers(
+#             sequence,
+#             k
+#         )
+
+#         for kmer in kmers:
+#             bloom.add(kmer)
+
+#     return bloom
+def build_bloom_filter(
+    reads,
+    k,
+    filter_size=1000,
+    hash_count=3
+):
+
+    bloom = BloomFilter(
+        size=filter_size,
+        hash_count=hash_count
+    )
 
     for read in reads:
 
@@ -346,12 +371,40 @@ if seq1 and seq2:
 
 st.header("Lot 3 : Bloom Filter")
 
+# Paramètres du Bloom Filter
+filter_size = st.slider(
+    "Taille du filtre (m)",
+    100,
+    10000,
+    1000
+)
+
+hash_count = st.slider(
+    "Nombre de fonctions de hachage",
+    1,
+    10,
+    3
+)
+
+st.info(
+    f"""
+    Taille du filtre (m) = {filter_size}
+    Nombre de fonctions de hachage = {hash_count}
+
+    Plus m est grand → moins de faux positifs.
+    Plus le nombre de fonctions de hachage est élevé,
+    plus le test est précis mais plus il coûte cher.
+    """
+)
+
 if uploaded_file is not None:
 
     # Construction du filtre
     bloom = build_bloom_filter(
         reads,
-        k
+        k,
+        filter_size,
+        hash_count
     )
 
     kmer_test = st.text_input(
