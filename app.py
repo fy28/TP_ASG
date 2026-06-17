@@ -96,7 +96,19 @@ def longest_common_subsequence(seq1, seq2):
 
     lcs.reverse()
 
-    return "".join(lcs), dp[m][n]
+    #return "".join(lcs), dp[m][n]
+    #
+    lcs_string = "".join(lcs)
+
+    start_seq1 = seq1.find(lcs_string)
+    start_seq2 = seq2.find(lcs_string)
+
+    return (
+        lcs_string,
+        dp[m][n],
+        start_seq1,
+        start_seq2
+    )
 
 
 uploaded_file = st.file_uploader(
@@ -196,15 +208,25 @@ seq2 = st.text_input(
 if seq1 and seq2:
 
     # Calcul du LCS
-    lcs, score = longest_common_subsequence(
-        seq1,
-        seq2
+    #old one
+    # lcs, score = longest_common_subsequence(
+    #     seq1,
+    #     seq2
+    # )
+    lcs, score, pos1, pos2 = longest_common_subsequence(
+    seq1,
+    seq2
     )
 
     st.write(f"Longueur Read 1 : {len(seq1)}")
     st.write(f"Longueur Read 2 : {len(seq2)}")
 
     st.write(f"Score : {score}")
+    #barre visuelle de similarite mais pas oblig
+    st.progress(score / max(len(seq1), len(seq2)))
+    st.write(f"Position dans Read 1 : {pos1}")
+
+    st.write(f"Position dans Read 2 : {pos2}")
 
     st.write(
         f"Sous-séquence commune : {lcs}"
