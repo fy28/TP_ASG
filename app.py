@@ -187,6 +187,37 @@ def get_successors(kmer, bloom):
 
     return successors
 
+#contig lot3
+def build_contig(seed, bloom, max_length=50):
+
+    contig = seed
+    current = seed
+
+    path = [seed]
+
+    for _ in range(max_length):
+
+        successors = get_successors(
+            current,
+            bloom
+        )
+
+        if len(successors) == 0:
+            break
+
+        if len(successors) > 1:
+            break
+
+        next_kmer = successors[0]
+
+        path.append(next_kmer)
+
+        contig += next_kmer[-1]
+
+        current = next_kmer
+
+    return contig, path
+
 
 uploaded_file = st.file_uploader(
     "Choisissez un fichier FASTQ",
@@ -341,9 +372,7 @@ if uploaded_file is not None:
                 "Certainement absent"
             )
 
-    st.subheader("Voisins 3' du k-mer")
-
-    if kmer_test:
+        st.subheader("Voisins 3' du k-mer")
 
         successors = get_successors(
             kmer_test,
@@ -361,3 +390,28 @@ if uploaded_file is not None:
 
         else:
             st.warning("Bifurcation détectée")
+
+    st.subheader("Construction d'un contig")
+
+    seed = st.text_input(
+        "k-mer de départ",
+        value="ATC"
+    )
+
+    if seed:
+
+        # Construction du contig + récupération du chemin
+        contig, path = build_contig(
+            seed,
+            bloom
+        )
+
+        st.write("Contig généré :")
+
+        st.code(contig)
+
+        st.write("Chemin suivi :")
+
+        st.write(
+            " → ".join(path)
+        )
